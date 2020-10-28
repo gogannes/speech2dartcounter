@@ -1,20 +1,28 @@
 import time
+from tkinter import DISABLED, END
 
 from speech2dartcounter.text_processor import TextProcessor
 
 
 class Recognizer:
-    def __init__(self, sr, r, audio_queue, dc, anweisungs_label, info_analyze_duration, logging):
+    def __init__(self, sr, r, audio_queue, dc, history_text, points_label, google_label, logging):
         self._running = False
         self.sr = sr
         self.r = r
         self.audio_queue = audio_queue
         self.processor = TextProcessor(logging)
         self.dc = dc
-        self.anweisungs_label = anweisungs_label
-        self.info_analyze_duration = info_analyze_duration
+        self.points_label = points_label
+        self.google_label = google_label
+        self.history_text = history_text
         self.logging = logging
         self.language = None
+
+    def add_history_text(self, text):
+        self.history_text.config(state='normal')
+        self.history_text.insert(END, text)
+        self.history_text.config(state=DISABLED)
+        self.history_text.see("end")
 
     def setLanguage(self, language):
         self.language = language
@@ -38,7 +46,7 @@ class Recognizer:
             audio = self.audio_queue.get()  # retrieve the next audio processing job from the main thread
             if audio is None: break  # stop processing if the main thread is done
             self.logging.info('processing..')
-            audio
+
             # received audio data, now we'll recognize it using Google Speech Recognition
             try:
                 # for testing purposes, we're just using the default API key
@@ -48,6 +56,7 @@ class Recognizer:
                 text = self.r.recognize_google(audio, language=self.language)
             except self.sr.UnknownValueError:
                 self.logging.info("Google didn't understand.")
+                self.add_history_text("Google didn't understand.\n")
                 continue
             except self.sr.RequestError as e:
                 self.logging.info("Could not request results from Google Speech Recognition service; {0}".format(e))
@@ -56,9 +65,9 @@ class Recognizer:
             self.audio_queue.task_done()  # mark the audio processing job as completed in the queue
             elapsed_time = time.time() - start_time
             self.logging.info("Google Speech Recognition took %.2f sec" % elapsed_time)
-
-            self.info_analyze_duration.config(text="Google: %.2f sec" % elapsed_time)
+            self.google_label.config(text="Google: %.2f sec" % elapsed_time)
             self.logging.info("I understood: '%s'" % text)
+            self.add_history_text("'%s' -> " % text)
 
             if ("enter" in text.lower()) or \
                     ("ente" in text.lower()) or \
@@ -66,8 +75,10 @@ class Recognizer:
                     ("okay" in text.lower()) or \
                     ("ok" in text.lower()):
                 self.logging.info("word 'enter' detected, I just press enter.")
+                self.add_history_text("Press Enter\n")
                 self.dc.setForeground()
                 self.dc.enter()
+                continue
 
             (punkte, punkte_str) = self.processor.process(text)
             if punkte != -1:
@@ -76,11 +87,15 @@ class Recognizer:
                     self.dc.enterPoints(points=punkte)
                     if ("+" in punkte_str) or ("*" in punkte_str):
                         self.logging.info('I enter: %s = %s ' % (punkte_str, str(punkte)))
+                        self.add_history_text("%s = %s\n" % (punkte_str, str(punkte)))
+
                         punkte_str = punkte_str + " \n= " + str(punkte)
                     else:
                         self.logging.info('I enter: %s ' % str(punkte))
+                        self.add_history_text("%s\n" % (str(punkte)))
 
-                    self.anweisungs_label.config(text=punkte_str)
-
+                    self.points_label.config(text=punkte_str)
                 else:
                     self.logging.info('I don''t enter results as stopped by user')
+            else:
+                self.add_history_text("?\n")

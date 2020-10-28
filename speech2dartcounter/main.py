@@ -66,8 +66,8 @@ lang_var = StringVar()
 lang_var.set(language_optionList[0])  # initialize with german language
 
 window.title("Speech 2 DartCounter")
-totalwith = 520
-totalheight = 830
+totalwith = 550
+totalheight = 1000
 posx = 2000
 posy = 100
 window.geometry(str(totalwith) + "x" + str(totalheight) + "+" + str(posx) + "+" + str(posy))
@@ -89,29 +89,44 @@ google_label = Label(window, text="Google: - sec", bg="#f0f0f0", anchor='w')
 rec_label = Label(window, text="Record: - sec", bg="#f0f0f0", anchor='w')
 mail_label = Label(window, text="gogannes@gmail.com", bg="#f0f0f0", anchor='c')
 
+history_scrollbar = Scrollbar(window)
+history_text = Text(window, height=4, width=50)
+history_scrollbar.config(command=history_text.yview)
+history_text.config(yscrollcommand=history_scrollbar.set)
+
+history_text.insert(END, "Press start and say something!\n")
+history_text.config(state=DISABLED)
+
 mleft = 10
-start_button.place(x=mleft, y=10, width=totalwith - 2 * mleft, height=100)
-stop_button.place(x=mleft, y=120, width=totalwith - 2 * mleft, height=100)
+start_button.place(x=mleft, y=10, width=totalwith / 2 - 2 * mleft, height=100)
+stop_button.place(x=mleft + totalwith / 2, y=10, width=totalwith / 2 - 2 * mleft, height=100)
 
-listen_label.place(x=mleft, y=230, width=totalwith - 2 * mleft, height=100)
-points_label.place(x=mleft, y=340, width=totalwith - 2 * mleft, height=150)
+start_at = 130
+listen_label.place(x=mleft, y=start_at, width=totalwith - 2 * mleft, height=100)
+points_label.place(x=mleft, y=start_at + 100, width=totalwith - 2 * mleft, height=150)
 
-start_at = 480
+start_at = start_at + 250
 dart_window_label.place(x=mleft, y=start_at, width=totalwith - 2 * mleft, height=35)
 check_dart_window_button.place(x=mleft, y=start_at + 35, width=totalwith - 2 * mleft, height=40)
 
-start_at = 560
+start_at = start_at + 80
 language_label.place(x=mleft, y=start_at, width=120, height=35)
 language_om.place(x=140, y=start_at, width=150, height=35)
 
-start_at = 600
+start_at = start_at + 40
 sensitivity_label.place(x=mleft, y=start_at, width=totalwith - 2 * mleft, height=35)
 sensitivity_scale.place(x=mleft, y=start_at + 35, width=totalwith - 2 * mleft, height=70)
 
-start_at = 710
-rec_label.place(x=mleft, y=start_at, width=totalwith - 2 * mleft, height=35)
-google_label.place(x=mleft, y=start_at + 35, width=totalwith - 2 * mleft, height=35)
-mail_label.place(x=mleft, y=start_at + 35 + 40, width=totalwith - 2 * mleft, height=35)
+start_at = start_at + 110
+rec_label.place(x=mleft, y=start_at, width=totalwith / 2 - 2 * mleft, height=35)
+google_label.place(x=mleft + totalwith / 2, y=start_at, width=totalwith / 2 - 2 * mleft, height=35)
+
+start_at = start_at + 40
+width_scrollbar = 30
+history_scrollbar.place(x=totalwith - mleft - width_scrollbar, y=start_at, width=width_scrollbar, height=300)
+history_text.place(x=mleft, y=start_at, width=totalwith - 2 * mleft - width_scrollbar, height=300)
+
+mail_label.place(x=mleft, y=totalheight - 40, width=totalwith - 2 * mleft, height=35)
 
 r = sr.Recognizer()
 r.energy_threshold = 2000  # minimum audio energy to consider for recording
@@ -124,7 +139,7 @@ r.pause_threshold = 0.6  # seconds of non-speaking audio before a phrase is cons
 audio_queue = Queue()
 dc = InputDartCounter()
 
-recognizer = Recognizer(sr, r, audio_queue, dc, points_label, google_label, logging)
+recognizer = Recognizer(sr, r, audio_queue, dc, history_text, points_label, google_label, logging)
 recognizer.setLanguage(lang_var.get())
 recognize_thread = Thread(target=recognizer.run)
 recognize_thread.daemon = True
