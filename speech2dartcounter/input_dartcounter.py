@@ -11,6 +11,7 @@ class InputDartCounter():
         # https://stackoverflow.com/a/2791979
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.window_title = window_title
+        self.numberOfEnters = 1
 
     def checkWindow(self):
         try:
@@ -27,18 +28,20 @@ class InputDartCounter():
                 SetForegroundWindow(find_window(title_re=self.window_title))
                 success = True
             except:
-                mbox.showwarning("Warning", "I could not bring window in foreground!\n"
-                                            "Try to open window 'DartCounter...' and then press 'OK'")
+                mbox.showwarning("Warning", "I could not bring window in foreground! Is it open only once?\n"
+                                            "Try to open browser window 'DartCounter...' (dartcounter.net) and then press 'OK'")
 
-    def enter(self, sleep=0.05):
-        time.sleep(sleep)
+    def enter(self):
+        time.sleep(0.1)
         self.shell.SendKeys("{ENTER}")
 
-    def enterPoints(self, points, noEnters=1, sleep=0.05):
-        time.sleep(sleep)
+    def enterPoints(self, points):
+        time.sleep(0.1)
         self.shell.SendKeys(str(points))
-        for i in range(0, noEnters):
-            time.sleep(sleep)
+        time.sleep(0.05)
+        for i in range(0, self.numberOfEnters):
+            if i > 0:
+                time.sleep(0.3)
             self.shell.SendKeys("{ENTER}")
 
 

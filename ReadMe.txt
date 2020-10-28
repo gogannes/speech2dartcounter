@@ -23,13 +23,25 @@ Version: Development (27 Oct 2020)
    - Example EN: '1 and 5 plus 60 Points' = 1+5+60
    - Example IT: '180 Punti' = 180
 
-5. If a popup shows up during the game, you can close it with "okay"/"enter"
+5. If a popup shows up during the game, you can close it with "okay"/"enter".
+   For the "darts used on double"-popup you can also say "0/1/2/3 Points" and
+   the respective number is selected before it is closed.
 
 6. If necessary play with the threshold slider:
    - lower threshold: speach is detected and analyzed even if the microphone 
      signal is weak (good if you don't have a lot noise around).
    - higher threshold: good for a noisy environment, but you have to speak 
      directly into the microphone.
+   - If 'Record' runs for more than 3 seconds even if you haven't spoken
+     you have to increase the threshold! (your speech is only analyzed after
+     the record is done)
+
+7. You can set how often the "enter"-key is invoked after the score is typed
+   in ("No. of enters").
+   Recommendation:
+   - x01 game: 2 (in case the "darts used on double" popup shows up, it will
+     is closed immediately)
+   - singles training game: 0
 
 For nerds:
 - 'Record:' shows the duration of the audio recording (it restarts periodically 

@@ -77,6 +77,7 @@ class Recognizer:
                 self.logging.info("word 'enter' detected, I just press enter.")
                 self.add_history_text("Press Enter\n")
                 self.dc.setForeground()
+                time.sleep(0.1)
                 self.dc.enter()
                 continue
 
@@ -84,6 +85,7 @@ class Recognizer:
             if punkte != -1:
                 if self._running:
                     self.dc.setForeground()
+                    time.sleep(0.1)
                     self.dc.enterPoints(points=punkte)
                     if ("+" in punkte_str) or ("*" in punkte_str):
                         self.logging.info('I enter: %s = %s ' % (punkte_str, str(punkte)))
