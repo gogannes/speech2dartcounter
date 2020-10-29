@@ -43,6 +43,9 @@ Version: Development (27 Oct 2020)
      is closed immediately)
    - singles training game: 0
 
+8. You can say "undo/rückgängig/anullare" to undo the last entered points
+   (only working properly for x01-games)
+
 For nerds:
 - 'Record:' shows the duration of the audio recording (it restarts periodically 
   after 3 sec, but continues if the threshold is reached.

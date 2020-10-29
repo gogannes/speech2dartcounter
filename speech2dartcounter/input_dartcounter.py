@@ -35,6 +35,14 @@ class InputDartCounter():
         time.sleep(0.1)
         self.shell.SendKeys("{ENTER}")
 
+    def undo(self):
+        time.sleep(0.1)
+        self.shell.SendKeys("{TAB}")
+        time.sleep(0.05)
+        self.shell.SendKeys("{TAB}")
+        time.sleep(0.05)
+        self.shell.SendKeys("{ENTER}")
+
     def enterPoints(self, points):
         time.sleep(0.1)
         self.shell.SendKeys(str(points))
@@ -57,3 +65,4 @@ if __name__ == "__main__":
         t2 = time.time()
         print(dc.setForeground())
         print("forground took %.2f sec" % (time.time() - t2))
+        # dc.undo()

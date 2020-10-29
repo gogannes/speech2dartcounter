@@ -80,6 +80,17 @@ class Recognizer:
                 time.sleep(0.1)
                 self.dc.enter()
                 continue
+            if ("rückgängig" in text.lower()) or \
+                    ("falsch" in text.lower()) or \
+                    ("undo" in text.lower()) or \
+                    ("back" in text.lower()) or \
+                    ("annullare" in text.lower()):
+                self.logging.info("word 'undo' detected, I just press enter.")
+                self.add_history_text("Undo\n")
+                self.dc.setForeground()
+                time.sleep(0.1)
+                self.dc.undo()
+                continue
 
             (punkte, punkte_str) = self.processor.process(text)
             if punkte != -1:
