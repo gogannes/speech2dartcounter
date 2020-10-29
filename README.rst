@@ -12,5 +12,4 @@ Installation of requirements for Windows:
  - ``pip install SpeechRecognition``
  - ``pip install pywinauto``
  - ``pip install PyAudio-0.2.11-cp37-cp37m-win_amd64.whl`` (see https://stackoverflow.com/a/55630212, and https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio)
- - ``pip install pyinstaller`` (to be able to generate executables: ``pyinstaller --onefile --i icon.ico --name Speech2DartCounter_version speech2dar
-tcounter/main.py``)
+ - ``pip install pyinstaller`` (to be able to generate executables: ``pyinstaller --onefile --i icon.ico --name Speech2DartCounter_version speech2dartcounter/main.py``)
