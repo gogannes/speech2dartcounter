@@ -29,6 +29,11 @@ def stop_action():
     recognizer.stop()
 
 
+def set_topmost():
+    window.attributes('-topmost', bool(var_foreground.get()))
+    logging.info("Set window topmost: %s" % bool(var_foreground.get()))
+
+
 def change_sensitivity(var):
     r.energy_threshold = int(var)  # energy_threshold.get()
     logging.info("Set energy_threshold to: %.1f" % r.energy_threshold)
@@ -93,6 +98,12 @@ language_label = Label(window, text="Language:", bg="#f0f0f0", anchor='w')
 language_om = OptionMenu(window, lang_var, *language_optionList, command=change_language)
 enter_spinbox = Spinbox(window, from_=0, to=3, textvariable=enters_var, command=change_no_enters)
 spinbox_label = Label(window, text="No. of enters:", bg="#f0f0f0", anchor='w')
+var_foreground = IntVar()
+var_foreground.set(1)
+topmost_checkbutton = Checkbutton(window, text="Keep foreground",
+                                  variable=var_foreground, command=set_topmost,
+                                  anchor="w")
+
 sensitivity_label = Label(window, text="Threshold:", bg="#f0f0f0", anchor='w')
 sensitivity_scale = Scale(window, from_=0, to=4000, orient=HORIZONTAL, command=change_sensitivity)
 google_label = Label(window, text="Google: - sec", bg="#f0f0f0", anchor='w')
@@ -126,8 +137,9 @@ enter_spinbox.place(x=totalwith - mleft - 50, y=start_at, width=50, height=35)
 spinbox_label.place(x=mleft + totalwith / 2 + 30, y=start_at, width=150, height=35)
 
 start_at = start_at + 40
-sensitivity_label.place(x=mleft, y=start_at, width=totalwith - 2 * mleft, height=35)
-sensitivity_scale.place(x=mleft, y=start_at + 35, width=totalwith - 2 * mleft, height=70)
+sensitivity_label.place(x=mleft, y=start_at, width=totalwith / 2 - mleft, height=35)
+topmost_checkbutton.place(x=mleft + totalwith / 2 + 30, y=start_at)
+sensitivity_scale.place(x=mleft, y=start_at + 35, width=totalwith / 2 - mleft, height=70)
 
 start_at = start_at + 110
 rec_label.place(x=mleft, y=start_at, width=totalwith / 2 - 2 * mleft, height=35)
