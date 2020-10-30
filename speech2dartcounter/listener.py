@@ -31,7 +31,7 @@ class Listener:
                         self.is_recording = True
                         try:
                             if self._running:
-                                self.audio_queue.put(self.r.listen(source, timeout=3.0))
+                                self.audio_queue.put(self.r.listen(source, timeout=3.0, phrase_time_limit=7))
                             #         This is done by waiting until the audio has an energy above
                             #         ``recognizer_instance.energy_threshold`` (the user has
                             #         started speaking), and then recording until it encounters

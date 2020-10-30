@@ -40,6 +40,13 @@ class TextProcessor():
             except:
                 raise ValueError
 
+    def isInt(self, string):
+        try:
+            self.getInt(string)
+            return True
+        except:
+            return False
+
     def multiply(self, words):
         new_wordlist = []
         new_text_for_display = []
@@ -61,11 +68,22 @@ class TextProcessor():
         new_wordlist = []
         new_text_for_display = []
         while i < len(words):
-            if (i + 2) < len(words) and words[i + 1].lower() in self.stringsAnd:
-                product = self.getInt(words[i]) + self.getInt(words[i + 2])
-                new_wordlist.append(str(product))
-                new_text_for_display.append((text_for_display[i]) + "+" + (text_for_display[i + 2]))
-                i = i + 3
+            if i + 2 < len(words):
+                # check whether 'and' is there, and
+                # check whether at least one of the surrounding words is a number,
+                # else the 'and' might just have been part of an ordinary sentence...
+                if (words[i + 1].lower() in self.stringsAnd) and \
+                        (self.isInt(words[i]) or self.isInt((words[i + 2]))):
+
+                    product = self.getInt(words[i]) + self.getInt(
+                        words[i + 2])  # if it doesn't work, an exception is thrown
+                    new_wordlist.append(str(product))
+                    new_text_for_display.append((text_for_display[i]) + "+" + (text_for_display[i + 2]))
+                    i = i + 3
+                else:
+                    new_wordlist.append(words[i])
+                    new_text_for_display.append((text_for_display[i]))
+                    i = i + 1
             else:
                 new_wordlist.append(words[i])
                 new_text_for_display.append((text_for_display[i]))
@@ -112,6 +130,9 @@ class TextProcessor():
         # first some "strange" manual fixes
         if self.language == "en":
             text = self.fix_pounds(text)
+        if self.language == "de":
+            if text.lower() == "nullpunkt": text = "0 punkte"
+            if text.lower() == "nullpunkte": text = "0 punkte"
         if self.language == "it":
             if text == "0punti": text = "0 punti"
             if text == "hotmail.it": text = "8 punti"
@@ -161,6 +182,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     processor = TextProcessor(logging)
+
+    processor.setLanguage("de")
+    text = "jetzt habe ich 10 Punkte und dieses und sowie dieses und hat nichts zu sagen"
+    assert processor.process(text) == (10, "10"), processor.process(text)
+
     processor.setLanguage("de")
     text = "aads ötext 12 plus 40 * 2 plus 23 punkte"
     assert processor.process(text) == (115, "12+40*2+23"), processor.process(text)

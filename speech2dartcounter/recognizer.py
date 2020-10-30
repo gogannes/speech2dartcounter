@@ -1,5 +1,7 @@
 import time
+import winsound
 from tkinter import DISABLED, END
+import tkinter.font as tkFont
 
 from speech2dartcounter.text_processor import TextProcessor
 
@@ -43,6 +45,7 @@ class Recognizer:
         while True:
             if self.audio_queue.qsize() > 0:
                 self.logging.info("queue size: " + str(self.audio_queue.qsize()))
+
             audio = self.audio_queue.get()  # retrieve the next audio processing job from the main thread
             if audio is None: break  # stop processing if the main thread is done
             self.logging.info('processing..')
@@ -53,13 +56,21 @@ class Recognizer:
                 # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
                 # instead of `r.recognize_google(audio)`
                 start_time = time.time()
+
+                self.points_label.config(
+                    text="Google... (%i in queue)" % self.audio_queue.qsize() if self.audio_queue.qsize() > 0 else "Google...",
+                    font=tkFont.Font(size=16))
                 text = self.r.recognize_google(audio, language=self.language)
+                self.points_label.config(text="", font=tkFont.Font(size=24))
+
             except self.sr.UnknownValueError:
                 self.logging.info("Google didn't understand.")
                 self.add_history_text("Google didn't understand.\n")
+                self.points_label.config(text="?", font=tkFont.Font(size=24))
                 continue
             except self.sr.RequestError as e:
                 self.logging.info("Could not request results from Google Speech Recognition service; {0}".format(e))
+                self.points_label.config(text="Google Error", font=tkFont.Font(size=24))
                 continue
 
             self.audio_queue.task_done()  # mark the audio processing job as completed in the queue
@@ -76,6 +87,7 @@ class Recognizer:
                     ("ok" in text.lower()):
                 self.logging.info("word 'enter' detected, I just press enter.")
                 self.add_history_text("Press Enter\n")
+                self.points_label.config(text="Enter!")
                 self.dc.setForeground()
                 time.sleep(0.1)
                 self.dc.enter()
@@ -87,17 +99,17 @@ class Recognizer:
                     ("annullare" in text.lower()):
                 self.logging.info("word 'undo' detected, I just press enter.")
                 self.add_history_text("Undo\n")
+                self.points_label.config(text="Undo!")
                 self.dc.setForeground()
-                time.sleep(0.1)
+                frequency = 440 * 2  # Set Frequency To 2500 Hertz
+                duration = 150  # Set Duration To 1000 ms == 1 second
+                winsound.Beep(frequency, duration)
                 self.dc.undo()
                 continue
 
             (punkte, punkte_str) = self.processor.process(text)
             if punkte != -1:
                 if self._running:
-                    self.dc.setForeground()
-                    time.sleep(0.1)
-                    self.dc.enterPoints(points=punkte)
                     if ("+" in punkte_str) or ("*" in punkte_str):
                         self.logging.info('I enter: %s = %s ' % (punkte_str, str(punkte)))
                         self.add_history_text("%s = %s\n" % (punkte_str, str(punkte)))
@@ -108,7 +120,12 @@ class Recognizer:
                         self.add_history_text("%s\n" % (str(punkte)))
 
                     self.points_label.config(text=punkte_str)
+
+                    self.dc.setForeground()
+                    time.sleep(0.1)
+                    self.dc.enterPoints(points=punkte)
                 else:
                     self.logging.info('I don''t enter results as stopped by user')
             else:
                 self.add_history_text("?\n")
+                self.points_label.config(text="?")
