@@ -49,14 +49,6 @@ def change_no_enters():
     logging.info("Set number of enters to: %s" % dc.numberOfEnters)
 
 
-def window_checker():
-    if dc.checkWindow():
-        dart_window_label.config(text="")
-        dc.setForeground()
-    else:
-        dart_window_label.config(text="Window missing!")
-
-
 def updater():
     if listener.is_recording:
         elapsed = time.time() - listener.rec_started
@@ -92,8 +84,6 @@ start_button = Button(window, text="Start", command=start_action)
 stop_button = Button(window, text="Stop", command=stop_action)
 listen_label = Label(window, text="Not listening", bg="#f0f0f0", font=tkFont.Font(size=14), anchor='c')
 points_label = Label(window, text=" - ", font=tkFont.Font(size=24), anchor='c')
-dart_window_label = Label(window, text="Window missing!", fg="red")
-check_dart_window_button = Button(window, text="Check window", command=window_checker)
 language_label = Label(window, text="Language:", bg="#f0f0f0", anchor='w')
 language_om = OptionMenu(window, lang_var, *language_optionList, command=change_language)
 enter_spinbox = Spinbox(window, from_=0, to=3, textvariable=enters_var, command=change_no_enters)
@@ -127,10 +117,6 @@ listen_label.place(x=mleft, y=start_at, width=totalwith - 2 * mleft, height=100)
 points_label.place(x=mleft, y=start_at + 100, width=totalwith - 2 * mleft, height=150)
 
 start_at = start_at + 250
-dart_window_label.place(x=mleft, y=start_at, width=totalwith - 2 * mleft, height=35)
-check_dart_window_button.place(x=mleft, y=start_at + 35, width=totalwith - 2 * mleft, height=40)
-
-start_at = start_at + 80
 language_label.place(x=mleft, y=start_at, width=120, height=35)
 language_om.place(x=140, y=start_at, width=150, height=35)
 enter_spinbox.place(x=totalwith - mleft - 50, y=start_at, width=50, height=35)
@@ -148,7 +134,7 @@ google_label.place(x=mleft + totalwith / 2, y=start_at, width=totalwith / 2 - 2 
 start_at = start_at + 40
 width_scrollbar = 30
 history_scrollbar.place(x=totalwith - mleft - width_scrollbar, y=start_at, width=width_scrollbar, height=300)
-history_text.place(x=mleft, y=start_at, width=totalwith - 2 * mleft - width_scrollbar, height=300)
+history_text.place(x=mleft, y=start_at, width=totalwith - 2 * mleft - width_scrollbar, height=385)
 
 mail_label.place(x=mleft, y=totalheight - 40, width=totalwith - 2 * mleft, height=35)
 
@@ -176,7 +162,6 @@ listen_thread.daemon = True
 listen_thread.name = "Listener"
 listen_thread.start()
 
-window_checker()  # run once to show directly if window is missing
 updater()
 stop_button.config(state="disabled")
 
