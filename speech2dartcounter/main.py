@@ -73,7 +73,8 @@ def update_label(queue, label):
                 label.config(bg=content_dict[key])
             elif key == "size":
                 label.config(font=tkFont.Font(size=content_dict[key]))
-
+            else:
+                raise Exception("unknown key! " + key)
 
 def update_history_text(text_queue, history_text):
     try:

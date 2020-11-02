@@ -111,7 +111,7 @@ class Recognizer:
                     ("annullare" in text.lower()):
                 self.logging.info("word 'undo' detected, I just press enter.")
                 self.history_text_queue.put("Undo\n")
-                self.points_label_queue.put({"text": "Enter!"})
+                self.points_label_queue.put({"text": "Undo!"})
 
                 self.dc.setForeground()
                 frequency = 440 * 2  # Set Frequency To 2500 Hertz
