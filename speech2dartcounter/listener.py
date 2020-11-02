@@ -2,13 +2,13 @@ import time
 
 
 class Listener:
-    def __init__(self, sr, r, audio_queue, info_label, logging):
+    def __init__(self, sr, r, audio_queue, info_label_queue, logging):
         self._running = False
         self.sr = sr
         self.r = r
         self.audio_queue = audio_queue
         self.logging = logging
-        self.info_label = info_label
+        self.info_label_queue = info_label_queue
         self.is_recording = False
         self.rec_started = None
         self.kill = False  # if true, infinite loop is stopped
@@ -31,7 +31,11 @@ class Listener:
             while self.kill == False:  # repeatedly listen for phrases and put the resulting audio on the audio processing job queue
                 if self._running:
                     # self.logging.info("start listening..")
-                    self.info_label.config(text="Listening", bg="green")
+                    self.info_label_queue.put({
+                        "text": "Listening",
+                        "bg": "green",
+                        "size": 14
+                    })
                     self.rec_started = time.time()
                     self.is_recording = True
                     try:
@@ -68,9 +72,12 @@ class Listener:
                         success = False
 
                     self.is_recording = False
-                    if self._running == False or self.kill:
-                        break
-                    self.info_label.config(text="Not listening", bg="#f0f0f0")
+                    self.info_label_queue.put({
+                        "text": "Not listening",
+                        "fg": "black",
+                        "bg": "#f0f0f0",
+                        "size": 14
+                    })
                     if success:
                         elapsed_time = time.time() - self.rec_started
                         text = "I listend for %.2f sec" % elapsed_time
