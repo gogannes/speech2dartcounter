@@ -19,6 +19,8 @@ class Recognizer:
         self.history_text = history_text
         self.logging = logging
         self.language = None
+        self.kill = False  # if true, infinite loop is stopped
+        self.is_finished = False
 
     def add_history_text(self, text):
         self.history_text.config(state='normal')
@@ -41,11 +43,16 @@ class Recognizer:
     def start(self):
         self._running = True
 
+    def is_running(self):
+        if self.is_finished:
+            return False
+        else:
+            return True
+
     def run(self):
-        while True:
+        while self.kill == False:
             if self.audio_queue.qsize() > 0:
                 self.logging.info("queue size: " + str(self.audio_queue.qsize()))
-
             audio = self.audio_queue.get()  # retrieve the next audio processing job from the main thread
             if audio is None: break  # stop processing if the main thread is done
             self.logging.info('processing..')
@@ -60,18 +67,22 @@ class Recognizer:
                 self.points_label.config(
                     text="Google... (%i in queue)" % self.audio_queue.qsize() if self.audio_queue.qsize() > 0 else "Google...",
                     font=tkFont.Font(size=16))
-                text = self.r.recognize_google(audio, language=self.language)
+                text = self.r.recognize_google(audio, language=self.language, logging=self.logging)
                 self.points_label.config(text="", font=tkFont.Font(size=24))
 
-            except self.sr.UnknownValueError:
+            except self.sr.UnknownValueError as e:
+                self.logging.info(e)
                 self.logging.info("Google didn't understand.")
                 self.add_history_text("Google didn't understand.\n")
+                self.google_label.config(text="Google: %.2f sec" % elapsed_time)
                 self.points_label.config(text="?", font=tkFont.Font(size=24))
                 continue
             except self.sr.RequestError as e:
                 self.logging.info("Could not request results from Google Speech Recognition service; {0}".format(e))
                 self.points_label.config(text="Google Error", font=tkFont.Font(size=24))
                 continue
+            except Exception as e:
+                self.logging.error(e)
 
             self.audio_queue.task_done()  # mark the audio processing job as completed in the queue
             elapsed_time = time.time() - start_time
@@ -129,3 +140,4 @@ class Recognizer:
             else:
                 self.add_history_text("?\n")
                 self.points_label.config(text="?")
+        self.is_finished = True

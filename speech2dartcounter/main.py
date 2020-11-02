@@ -1,12 +1,11 @@
 import time
 from tkinter import *
 import tkinter.font as tkFont
-from tkinter.messagebox import showerror
+from tkinter.messagebox import showerror, showinfo
 import speech_recognition as sr
 from threading import Thread
 from queue import Queue
 import logging
-
 from speech2dartcounter.listener import Listener
 from speech2dartcounter.recognizer import Recognizer
 from speech2dartcounter.input_dartcounter import InputDartCounter
@@ -21,7 +20,6 @@ logging.basicConfig(
 )
 
 window = Tk()
-logging.basicConfig(level=logging.INFO, format="%(threadName)s:%(message)s")
 
 
 def start_action():
@@ -65,11 +63,48 @@ def updater():
 
     # check whether all threads are alive
     if not (recognize_thread.is_alive() and listen_thread.is_alive()):
-        window.config(bg="red")
         logging.error("Not all threads are running!")
-        showerror("Error", "Restart App!")
-        window.destroy()
-    window.after(100, updater)
+        points_label.config(text="ERROR RESTART!",
+                            font=tkFont.Font(size=14), fg="red", bg="black", anchor='c')
+    else:
+        window.after(100, updater)
+
+
+def on_closing():
+    listener.stop()  # -> _running=False
+    listener.kill = True
+    if listener.is_running():
+        logging.info("listener function is still recording...")
+        listen_label.config(text="Waiting until recording\nhas finished...",
+                            font=tkFont.Font(size=14), fg="red", bg="black", anchor='c')
+        window.update()
+    while listener.is_running():
+        time.sleep(.1)
+    logging.info("Listening function finished.")
+
+    audio_queue.join()  # block until all current audio processing jobs are done
+    audio_queue.put(None)  # tell the recognize_thread to stop
+
+    recognizer.stop()  # -> _running=False
+    recognizer.kill = True
+    if recognizer.is_running():
+        logging.info("recognizer function is still running...")
+        listen_label.config(text="Waiting until recognizing\nhas finished...",
+                            font=tkFont.Font(size=14), fg="red", bg="black", anchor='c')
+        window.update()
+    while recognizer.is_running():
+        time.sleep(.1)
+    logging.info("Recognizer function finished.")
+
+    logging.info("wait for recognizer thread to finish...")
+    while recognizer.is_finished == False:
+        time.sleep(0.1)
+    logging.info("Recognizer thread finished")
+
+    recognize_thread.join()  # wait for the recognize_thread to actually stop
+    listen_thread.join()
+
+    window.destroy()
 
 
 language_optionList = ('de-DE', 'en-GB', 'en-US', 'it-IT')
@@ -87,7 +122,8 @@ posy = 100
 window.geometry(str(totalwith) + "x" + str(totalheight) + "+" + str(posx) + "+" + str(posy))
 window.attributes('-topmost', True)
 window.resizable(0, 0)
-window.attributes('-toolwindow', True)
+# window.attributes('-toolwindow', True)
+window.iconbitmap('../icon.ico')
 
 start_button = Button(window, text="Start", command=start_action)
 stop_button = Button(window, text="Stop", command=stop_action)
@@ -176,9 +212,8 @@ stop_button.config(state="disabled")
 
 dc.numberOfEnters = int(enter_spinbox.get())
 
+window.protocol("WM_DELETE_WINDOW", on_closing)
+
 window.mainloop()
 
-audio_queue.join()  # block until all current audio processing jobs are done
-audio_queue.put(None)  # tell the recognize_thread to stop
-recognize_thread.join(timeout=1.1)  # wait for the recognize_thread to actually stop
-listen_thread.join(timeout=1.1)
+logging.info("Exiting...")
