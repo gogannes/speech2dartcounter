@@ -26,14 +26,14 @@ window = Tk()
 def start_action():
     start_button.config(state="disabled")
     stop_button.config(state="normal")
-    listener.start()
+    listener.start_recording_loop()
     recognizer.start()
 
 
 def stop_action():
     stop_button.config(state="disabled")
     start_button.config(state="normal")
-    listener.stop()
+    listener.stop_recording_loop()
     recognizer.stop()
 
 
@@ -71,7 +71,7 @@ def update_label(queue, label):
                 label.config(fg=content_dict[key])
             elif key == "bg":
                 label.config(bg=content_dict[key])
-            elif key == "font":
+            elif key == "size":
                 label.config(font=tkFont.Font(size=content_dict[key]))
 
 
@@ -107,15 +107,16 @@ def updater():
         points_label.config(text="ERROR RESTART!",
                             font=tkFont.Font(size=14), fg="red", bg="black", anchor='c')
     else:
-        window.after(25, updater)
+        pass
+    window.after(25, updater)
 
 
 def on_closing():
     logging.info("Cleanup...")
 
-    listener.stop()  # -> _running=False
+    listener.stop_recording_loop()
     listener.kill = True
-    recognizer.stop()  # -> _running=False
+    recognizer.stop()
     recognizer.kill = True
 
     # end listening
@@ -125,11 +126,15 @@ def on_closing():
                           font=tkFont.Font(size=14), fg="red", bg="black", anchor='c')
         window.update()
     while listener.is_running():
-        time.sleep(.1)
+        if listener.is_recording:
+            elapsed = time.time() - listener.rec_started
+            rec_label.config(text="Record: %.1f sec" % elapsed)
+        window.after(100)
+        window.update()
     logging.info("Listening function finished.")
 
     while listen_thread.is_alive():
-        time.sleep(0.1)
+        window.after(100)
     logging.info("Listening thread finished.")
 
     # end recognizing
@@ -141,11 +146,11 @@ def on_closing():
                           font=tkFont.Font(size=14), fg="red", bg="black", anchor='c')
         window.update()
     while recognizer.is_running():
-        time.sleep(.1)
+        window.after(100)
     logging.info("Recognizer function finished.")
 
     while recognize_thread.is_alive():
-        time.sleep(0.1)
+        window.after(100)
     logging.info("Recognizer thread finished.")
 
     recognize_thread.join()  # wait for the recognize_thread to actually stop
@@ -166,7 +171,7 @@ points_label_queue = Queue()
 google_label_queue = Queue()
 history_text_queue = Queue()
 
-window.title("Speech 2 DartCounter")
+window.title("Speech2DartCounter")
 totalwith = 550
 totalheight = 1000
 posx = 2000

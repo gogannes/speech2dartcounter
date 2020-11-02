@@ -10,7 +10,7 @@ class Recognizer:
     def __init__(self, sr, r, audio_queue, dc,
                  history_text_queue, points_label_queue, google_label_queue,
                  logging):
-        self._running = False
+        self.enter_results = False
         self.sr = sr
         self.r = r
         self.audio_queue = audio_queue
@@ -34,10 +34,11 @@ class Recognizer:
             self.processor.setLanguage("it")
 
     def stop(self):
-        self._running = False
+        self.enter_results = False
+        self.audio_queue.queue.clear()
 
     def start(self):
-        self._running = True
+        self.enter_results = True
 
     def is_running(self):
         if self.is_finished:
@@ -52,10 +53,10 @@ class Recognizer:
 
             audio = self.audio_queue.get()  # retrieve the next audio processing job from the main thread
             if audio is None: break  # stop processing if the main thread is done
-            if self._running is False: break
+            if self.kill is True: break
+
             self.logging.info('processing..')
 
-            # received audio data, now we'll recognize it using Google Speech Recognition
             try:
                 # for testing purposes, we're just using the default API key
                 # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
@@ -64,7 +65,7 @@ class Recognizer:
 
                 self.points_label_queue.put({
                     "text": "Google... (%i in queue)" % self.audio_queue.qsize() if self.audio_queue.qsize() > 0 else "Google...",
-                    "size": 16})
+                    "size": 8})
                 text = self.r.recognize_google(audio, language=self.language, logging=self.logging)
 
                 self.points_label_queue.put({"text": "", "size": 24})
@@ -82,12 +83,14 @@ class Recognizer:
             except Exception as e:
                 self.logging.error(e)
 
-            self.audio_queue.task_done()  # mark the audio processing job as completed in the queue
             elapsed_time = time.time() - start_time
             self.logging.info("Google Speech Recognition took %.2f sec" % elapsed_time)
             self.google_label_queue.put({"text": "Google: %.2f sec" % elapsed_time, })
             self.logging.info("I understood: '%s'" % text)
             self.history_text_queue.put("'%s' -> " % text)
+
+            if self.kill is True: break
+            if not self.enter_results: continue
 
             if ("enter" in text.lower()) or \
                     ("ente" in text.lower()) or \
@@ -119,23 +122,20 @@ class Recognizer:
 
             (punkte, punkte_str) = self.processor.process(text)
             if punkte != -1:
-                if self._running:
-                    if ("+" in punkte_str) or ("*" in punkte_str):
-                        self.logging.info('I enter: %s = %s ' % (punkte_str, str(punkte)))
-                        self.history_text_queue.put("%s = %s\n" % (punkte_str, str(punkte)))
+                if ("+" in punkte_str) or ("*" in punkte_str):
+                    self.logging.info('I enter: %s = %s ' % (punkte_str, str(punkte)))
+                    self.history_text_queue.put("%s = %s\n" % (punkte_str, str(punkte)))
 
-                        punkte_str = punkte_str + " \n= " + str(punkte)
-                    else:
-                        self.logging.info('I enter: %s ' % str(punkte))
-                        self.history_text_queue.put("%s\n" % (str(punkte)))
-
-                    self.points_label_queue.put({"text": punkte_str})
-
-                    self.dc.setForeground()
-                    time.sleep(0.1)
-                    self.dc.enterPoints(points=punkte)
+                    punkte_str = punkte_str + " \n= " + str(punkte)
                 else:
-                    self.logging.info('I don''t enter results as stopped by user')
+                    self.logging.info('I enter: %s ' % str(punkte))
+                    self.history_text_queue.put("%s\n" % (str(punkte)))
+
+                self.points_label_queue.put({"text": punkte_str})
+
+                self.dc.setForeground()
+                time.sleep(0.1)
+                self.dc.enterPoints(points=punkte)
             else:
                 self.history_text_queue.put("?\n")
                 self.points_label_queue.put({"text": "?"})

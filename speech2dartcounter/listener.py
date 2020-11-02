@@ -3,22 +3,22 @@ import time
 
 class Listener:
     def __init__(self, sr, r, audio_queue, info_label_queue, logging):
-        self._running = False
+        self.recording_loop = False
         self.sr = sr
         self.r = r
         self.audio_queue = audio_queue
         self.logging = logging
         self.info_label_queue = info_label_queue
-        self.is_recording = False
+        self.is_recording = False  # only for main thread to show duration of recording.
         self.rec_started = None
         self.kill = False  # if true, infinite loop is stopped
         self.is_finished = False
 
-    def stop(self):
-        self._running = False
+    def stop_recording_loop(self):
+        self.recording_loop = False
 
-    def start(self):
-        self._running = True
+    def start_recording_loop(self):
+        self.recording_loop = True
 
     def is_running(self):
         if self.is_finished:
@@ -29,7 +29,7 @@ class Listener:
     def run(self):
         with self.sr.Microphone() as source:
             while self.kill == False:  # repeatedly listen for phrases and put the resulting audio on the audio processing job queue
-                if self._running:
+                if self.recording_loop:
                     # self.logging.info("start listening..")
                     self.info_label_queue.put({
                         "text": "Listening",
@@ -39,7 +39,7 @@ class Listener:
                     self.rec_started = time.time()
                     self.is_recording = True
                     try:
-                        if self._running:
+                        if self.recording_loop:
                             self.audio_queue.put(self.r.listen(source, timeout=3.0, phrase_time_limit=7))
                             success = True
                         #         This is done by waiting until the audio has an energy above
