@@ -82,4 +82,6 @@ class Listener:
                         elapsed_time = time.time() - self.rec_started
                         text = "I listend for %.2f sec" % elapsed_time
                         self.logging.info(text)
+                else:
+                    time.sleep(0.1)
         self.is_finished = True
