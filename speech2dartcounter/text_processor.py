@@ -1,35 +1,30 @@
+import json
+
+
 class TextProcessor():
-    def __init__(self, logging):
+    def __init__(self, logging, file='languages.json'):
         self.language = "not set"
         self.logging = logging
 
+        self.logging.info("loading and re-formatting config: " + file)
+
+        with open(file, 'r', encoding='UTF-8') as f:
+            self.config = json.load(f, encoding='UTF-8')
+        # write it again, to maintain nice formatting
+        with open(file, 'w', encoding='UTF-8') as f:
+            json.dump(self.config, indent=2, fp=f, ensure_ascii=False)
+
     def setLanguage(self, language):
         self.language = language
-        if self.language == "de":
-            self.stringsAnd = ["plus", "+", "und"]
-            self.stringsTimes = ["mal", "*", "x"]
-            self.stringsPoints = ["punkte", "punkt", "punkten", "."]
-            self.numbers = {"null": 0, "eins": 1, "ein": 1, "einen": 1, "einem": 1, "einmal": 1, "zwei": 2, "drei": 3,
-                            "vier": 4, "fünf": 5, "fuenf": 5, "sechs": 6, "sex": 6, "sieben": 7, "acht": 8, "neun": 9,
-                            "zehn": 10, "elf": 11, "zwölf": 12, "zwoelf": 12, "dreizehn": 13}
-        elif self.language == "en":
-            self.stringsAnd = ["plus", "+", "and"]
-            self.stringsTimes = ["times", "time", "*", "x"]
-            self.stringsPoints = ["pints", "lbs", "points", "point", ".", "pounds"]
-            self.numbers = {"zero": 0, "one": 1, "once": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
-                            "sex": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12,
-                            "thirteen": 13, "twenty": 20, "thirty": 30, "fourty": 40, "fifty": 50, "sixty": 60,
-                            "seventy": 70, "eighty": 80, "ninety": 90}
-        elif self.language == "it":
-            self.stringsAnd = ["et", "e", "+"]
-            self.stringsTimes = ["volta", "volte", "*", "x"]
-            self.stringsPoints = ["punto", "punti", "ponti", "."]
-            self.numbers = {"zero": 0, "alcuni": 0, "nero": 0, "yahoo": 0, "uno": 1, "un": 1, "una": 1, "due": 2,
-                            "tre": 3, "quattro": 4, "cinque": 5, "sei": 6, "sette": 7, "otto": 8, "nove": 9,
-                            "dieci": 10, "undici": 11, "dodici": 12, "tredici": 13}
+        self.stringsAnd = self.config[self.language]["and"]
+        self.stringsTimes = self.config[self.language]["times"]
+        self.stringsPoints = self.config[self.language]["points"]
+        self.numbers = self.config[self.language]["numbers"]
 
-        else:
-            raise Exception('Unsupported Language' + self.language)
+        self.enter = self.config[self.language]["enter"]
+        self.undo = self.config[self.language]["undo"]
+
+        self.replace = self.config[self.language]["replace"]
 
     def getInt(self, string):
         try:
@@ -127,16 +122,13 @@ class TextProcessor():
         return text
 
     def process(self, text):
-        # first some "strange" manual fixes
+        for key in self.replace.keys():
+            text = text.lower().replace(key, self.replace[key])
+
+        # some "strange" manual fixes
         if self.language == "en":
             text = self.fix_pounds(text)
-        if self.language == "de":
-            if text.lower() == "nullpunkt": text = "0 punkte"
-            if text.lower() == "nullpunkte": text = "0 punkte"
         if self.language == "it":
-            if text == "0punti": text = "0 punti"
-            if text == "hotmail.it": text = "8 punti"
-            if text == "occhio.it": text = "8 punti"
             text = self.fix_due_punti(text)
 
         text = text.replace("+", " + ")

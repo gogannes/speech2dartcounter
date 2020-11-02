@@ -92,11 +92,7 @@ class Recognizer:
             if self.kill is True: break
             if not self.enter_results: continue
 
-            if ("enter" in text.lower()) or \
-                    ("ente" in text.lower()) or \
-                    ("penta" in text.lower()) or \
-                    ("okay" in text.lower()) or \
-                    ("ok" in text.lower()):
+            if len(set(self.processor.enter).intersection(set(text.lower().split()))) > 0:
                 self.logging.info("word 'enter' detected, I just press enter.")
                 self.history_text_queue.put("Press Enter\n")
                 self.points_label_queue.put({"text": "Enter!"})
@@ -104,11 +100,8 @@ class Recognizer:
                 time.sleep(0.1)
                 self.dc.enter()
                 continue
-            if ("rückgängig" in text.lower()) or \
-                    ("falsch" in text.lower()) or \
-                    ("undo" in text.lower()) or \
-                    ("back" in text.lower()) or \
-                    ("annullare" in text.lower()):
+
+            if len(set(self.processor.undo).intersection(set(text.lower().split()))) > 0:
                 self.logging.info("word 'undo' detected, I just press enter.")
                 self.history_text_queue.put("Undo\n")
                 self.points_label_queue.put({"text": "Undo!"})
