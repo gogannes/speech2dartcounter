@@ -1,3 +1,4 @@
+import os
 import time
 from tkinter import *
 import tkinter.font as tkFont
@@ -268,3 +269,4 @@ window.protocol("WM_DELETE_WINDOW", on_closing)
 window.mainloop()
 
 logging.info("Exiting...")
+os._exit(0)
