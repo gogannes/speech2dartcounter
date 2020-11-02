@@ -51,5 +51,7 @@ For nerds:
 - 'Google:' in case the threshold had been reached, the audio is transcribed 
   by google. The duration for the analysis is shown. For a smooth experience 
   it should be below 1 sec.
+- File 'languages.json': here most of the language settings are stored. The
+  file can be changed in an editor and is read at program start
 
 Developed by Johannes (gogannes@gmail.com).
