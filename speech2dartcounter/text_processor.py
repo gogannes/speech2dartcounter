@@ -1,4 +1,5 @@
 import json
+import os.path
 
 
 class TextProcessor():
@@ -6,13 +7,194 @@ class TextProcessor():
         self.language = "not set"
         self.logging = logging
 
-        self.logging.info("loading and re-formatting config: " + file)
+        if os.path.isfile(file):
+            self.logging.info("loading and re-formatting config: " + file)
+            with open(file, 'r', encoding='UTF-8') as f:
+                self.config = json.load(f, encoding='UTF-8')
+            # write it again, to maintain nice formatting
+            with open(file, 'w', encoding='UTF-8') as f:
+                json.dump(self.config, indent=2, fp=f, ensure_ascii=False)
+        else:
+            self.logging.info("file '%s' not found. Create it." % file)
+            self.config = self.setConfig()
+            with open(file, 'w', encoding='UTF-8') as f:
+                json.dump(self.config, indent=2, fp=f, ensure_ascii=False)
 
-        with open(file, 'r', encoding='UTF-8') as f:
-            self.config = json.load(f, encoding='UTF-8')
-        # write it again, to maintain nice formatting
-        with open(file, 'w', encoding='UTF-8') as f:
-            json.dump(self.config, indent=2, fp=f, ensure_ascii=False)
+    def setConfig(self):
+        config = dict()
+        config = {
+            "de": {
+                "and": [
+                    "plus",
+                    "+",
+                    "und"
+                ],
+                "times": [
+                    "mal",
+                    "*",
+                    "x"
+                ],
+                "points": [
+                    "punkte",
+                    "punkt",
+                    "punkten",
+                    "."
+                ],
+                "numbers": {
+                    "null": 0,
+                    "eins": 1,
+                    "ein": 1,
+                    "einen": 1,
+                    "einem": 1,
+                    "einmal": 1,
+                    "zwei": 2,
+                    "drei": 3,
+                    "vier": 4,
+                    "fünf": 5,
+                    "fuenf": 5,
+                    "sechs": 6,
+                    "sex": 6,
+                    "sieben": 7,
+                    "acht": 8,
+                    "neun": 9,
+                    "zehn": 10,
+                    "elf": 11,
+                    "zwölf": 12,
+                    "zwoelf": 12,
+                    "dreizehn": 13
+                },
+                "enter": [
+                    "enter",
+                    "ok",
+                    "okay",
+                    "eingabe",
+                    "ente"
+                ],
+                "undo": [
+                    "rückgängig",
+                    "falsch",
+                    "zurück"
+                ],
+                "replace": {
+                    "nullpunkt": "0 punkte",
+                    "nullpunkte": "0 punkte"
+                }
+            },
+            "en": {
+                "and": [
+                    "plus",
+                    "+",
+                    "and"
+                ],
+                "times": [
+                    "times",
+                    "time",
+                    "*",
+                    "x"
+                ],
+                "points": [
+                    "pints",
+                    "lbs",
+                    "points",
+                    "point",
+                    ".",
+                    "pounds"
+                ],
+                "numbers": {
+                    "zero": 0,
+                    "one": 1,
+                    "once": 1,
+                    "two": 2,
+                    "three": 3,
+                    "four": 4,
+                    "five": 5,
+                    "six": 6,
+                    "sex": 6,
+                    "seven": 7,
+                    "eight": 8,
+                    "nine": 9,
+                    "ten": 10,
+                    "eleven": 11,
+                    "twelve": 12,
+                    "thirteen": 13,
+                    "twenty": 20,
+                    "thirty": 30,
+                    "fourty": 40,
+                    "fifty": 50,
+                    "sixty": 60,
+                    "seventy": 70,
+                    "eighty": 80,
+                    "ninety": 90
+                },
+                "enter": [
+                    "enter",
+                    "ok",
+                    "okay"
+                ],
+                "undo": [
+                    "undo",
+                    "back"
+                ],
+                "replace": {}
+            },
+            "it": {
+                "and": [
+                    "et",
+                    "e",
+                    "+"
+                ],
+                "times": [
+                    "volta",
+                    "volte",
+                    "*",
+                    "x"
+                ],
+                "points": [
+                    "punto",
+                    "punti",
+                    "ponti",
+                    "."
+                ],
+                "numbers": {
+                    "zero": 0,
+                    "alcuni": 0,
+                    "nero": 0,
+                    "yahoo": 0,
+                    "uno": 1,
+                    "un": 1,
+                    "una": 1,
+                    "due": 2,
+                    "tre": 3,
+                    "quattro": 4,
+                    "cinque": 5,
+                    "sei": 6,
+                    "sette": 7,
+                    "otto": 8,
+                    "nove": 9,
+                    "dieci": 10,
+                    "undici": 11,
+                    "dodici": 12,
+                    "tredici": 13
+                },
+                "enter": [
+                    "enter",
+                    "ok",
+                    "okay",
+                    "invio",
+                    "penta"
+                ],
+                "undo": [
+                    "annullare",
+                    "indietro"
+                ],
+                "replace": {
+                    "0punti": "0 punti",
+                    "hotmail.it": "8 punti",
+                    "occhio.it": "8 punti"
+                }
+            }
+        }
+        return config
 
     def setLanguage(self, language):
         self.language = language
