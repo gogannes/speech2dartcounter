@@ -11,6 +11,15 @@ from speech2dartcounter.listener import Listener
 from speech2dartcounter.recognizer import Recognizer
 from speech2dartcounter.input_dartcounter import InputDartCounter
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(threadName)s: [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("log.txt"),  # logging to file
+        logging.StreamHandler()  # logging to console
+    ]
+)
+
 window = Tk()
 logging.basicConfig(level=logging.INFO, format="%(threadName)s:%(message)s")
 
@@ -147,7 +156,7 @@ r.dynamic_energy_threshold = False
 r.pause_threshold = 0.6  # seconds of non-speaking audio before a phrase is considered complete
 
 audio_queue = Queue()
-dc = InputDartCounter()
+dc = InputDartCounter(logging=logging, window_title='DartCounter*')
 
 recognizer = Recognizer(sr, r, audio_queue, dc, history_text, points_label, google_label, logging)
 recognizer.setLanguage(lang_var.get())

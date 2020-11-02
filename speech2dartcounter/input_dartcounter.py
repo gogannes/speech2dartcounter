@@ -3,15 +3,16 @@ from win32gui import SetForegroundWindow
 from tkinter import messagebox as mbox
 import time
 import win32com.client
-from pprint import pprint
+import logging
 
 
 class InputDartCounter():
-    def __init__(self, window_title='DartCounter*'):
+    def __init__(self, logging=logging, window_title='DartCounter*'):
         # https://stackoverflow.com/a/2791979
         self.shell = win32com.client.Dispatch("WScript.Shell")
         self.window_title = window_title
         self.numberOfEnters = 1
+        self.logging = logging
 
     def checkWindow(self):
         try:
@@ -28,6 +29,7 @@ class InputDartCounter():
                 SetForegroundWindow(find_window(title_re=self.window_title))
                 success = True
             except:
+                self.logging.info("bring window to foreground not successfull...")
                 mbox.showwarning("Warning", "I could not bring window in foreground! Is it open only once?\n"
                                             "Try to open browser window 'DartCounter...' (dartcounter.net) and then press 'OK'")
 
