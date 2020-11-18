@@ -65,7 +65,7 @@ class Recognizer:
 
                 self.points_label_queue.put({
                     "text": "Google... (%i in queue)" % self.audio_queue.qsize() if self.audio_queue.qsize() > 0 else "Google...",
-                    "size": 8})
+                    "size": 24})
                 text = self.r.recognize_google(audio, language=self.language, logging=self.logging)
 
                 self.points_label_queue.put({"text": "", "size": 24})

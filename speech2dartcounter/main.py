@@ -10,6 +10,7 @@ import logging
 from speech2dartcounter.listener import Listener
 from speech2dartcounter.recognizer import Recognizer
 from speech2dartcounter.input_dartcounter import InputDartCounter
+import os.path
 
 logging.basicConfig(
     level=logging.INFO,
@@ -75,6 +76,7 @@ def update_label(queue, label):
                 label.config(font=tkFont.Font(size=content_dict[key]))
             else:
                 raise Exception("unknown key! " + key)
+
 
 def update_history_text(text_queue, history_text):
     try:
@@ -173,73 +175,83 @@ google_label_queue = Queue()
 history_text_queue = Queue()
 
 window.title("Speech2DartCounter")
-totalwith = 550
-totalheight = 1000
-posx = 2000
-posy = 100
-window.geometry(str(totalwith) + "x" + str(totalheight) + "+" + str(posx) + "+" + str(posy))
-window.attributes('-topmost', True)
-window.resizable(0, 0)
-# window.attributes('-toolwindow', True)
-window.iconbitmap('../icon.ico')
 
-start_button = Button(window, text="Start", command=start_action)
-stop_button = Button(window, text="Stop", command=stop_action)
-info_label = Label(window, text="Not listening", bg="#f0f0f0", font=tkFont.Font(size=14), anchor='c')
-points_label = Label(window, text=" - ", font=tkFont.Font(size=24), anchor='c')
+window.attributes('-topmost', True)
+# window.resizable(0, 0)
+# window.attributes('-toolwindow', True)
+
+if os.path.isfile('icon.ico'):
+    window.iconbitmap('icon.ico')
+else:
+    logging.info("'icon.ico' not found.")
+
+start_button = Button(window, text="Start", command=start_action, width=25, height=3)
+stop_button = Button(window, text="Stop", command=stop_action, width=25, height=3)
+info_label = Label(window, text="Not listening", bg="#f0f0f0", font=tkFont.Font(size=14), anchor='c', width=20,
+                   height=4)
+points_label = Label(window, text=" - ", bg="#f0f0f0", font=tkFont.Font(size=24), anchor='c', width=20, height=4)
+
 language_label = Label(window, text="Language:", bg="#f0f0f0", anchor='w')
 language_om = OptionMenu(window, lang_var, *language_optionList, command=change_language)
-enter_spinbox = Spinbox(window, from_=0, to=3, textvariable=enters_var, command=change_no_enters)
+
+enter_spinbox = Spinbox(window, from_=0, to=3, textvariable=enters_var, command=change_no_enters, width=2)
 spinbox_label = Label(window, text="No. of enters:", bg="#f0f0f0", anchor='w')
+
 var_foreground = IntVar()
 var_foreground.set(1)
-topmost_checkbutton = Checkbutton(window, text="Keep foreground",
+topmost_checkbutton = Checkbutton(window, text="Keep this window in foreground",
                                   variable=var_foreground, command=set_topmost,
-                                  anchor="w")
+                                  compound="left")
 
 sensitivity_label = Label(window, text="Threshold:", bg="#f0f0f0", anchor='w')
 sensitivity_scale = Scale(window, from_=0, to=4000, orient=HORIZONTAL, command=change_sensitivity)
+
 google_label = Label(window, text="Google: - sec", bg="#f0f0f0", anchor='w')
 rec_label = Label(window, text="Record: - sec", bg="#f0f0f0", anchor='w')
 mail_label = Label(window, text="gogannes@gmail.com", bg="#f0f0f0", anchor='c')
 
-history_scrollbar = Scrollbar(window)
-history_text = Text(window, height=4, width=50)
+frame_history = Frame(window)
+history_scrollbar = Scrollbar(frame_history)
+history_text = Text(frame_history, height=8, width=45)
 history_scrollbar.config(command=history_text.yview)
 history_text.config(yscrollcommand=history_scrollbar.set)
 
 history_text.insert(END, "Press start and say something!\n")
 history_text.config(state=DISABLED)
 
-mleft = 10
-start_button.place(x=mleft, y=10, width=totalwith / 2 - 2 * mleft, height=100)
-stop_button.place(x=mleft + totalwith / 2, y=10, width=totalwith / 2 - 2 * mleft, height=100)
+frame_history.grid_columnconfigure(0, minsize=0, weight=1)
+frame_history.grid_columnconfigure(1, minsize=0, weight=1)
+frame_history.grid_rowconfigure(0, minsize=0, weight=1)
+frame_history.grid_rowconfigure(1, minsize=0, weight=1)
 
-start_at = 130
-info_label.place(x=mleft, y=start_at, width=totalwith - 2 * mleft, height=100)
-points_label.place(x=mleft, y=start_at + 100, width=totalwith - 2 * mleft, height=150)
+history_text.pack(side=LEFT, fill="both")
+history_scrollbar.pack(side=RIGHT, fill="both")
 
-start_at = start_at + 250
-language_label.place(x=mleft, y=start_at, width=120, height=35)
-language_om.place(x=140, y=start_at, width=150, height=35)
-enter_spinbox.place(x=totalwith - mleft - 50, y=start_at, width=50, height=35)
-spinbox_label.place(x=mleft + totalwith / 2 + 30, y=start_at, width=150, height=35)
+window.grid_columnconfigure(0, minsize=50, weight=1, pad=10)
+window.grid_columnconfigure(1, minsize=50, weight=1, pad=10)
+window.grid_rowconfigure(0, minsize=50, weight=1, pad=10)
+window.grid_rowconfigure(1, minsize=50, weight=1, pad=10)
 
-start_at = start_at + 40
-sensitivity_label.place(x=mleft, y=start_at, width=totalwith / 2 - mleft, height=35)
-topmost_checkbutton.place(x=mleft + totalwith / 2 + 30, y=start_at)
-sensitivity_scale.place(x=mleft, y=start_at + 35, width=totalwith / 2 - mleft, height=70)
+start_button.grid(column=0, row=0)
+stop_button.grid(column=1, row=0)
 
-start_at = start_at + 110
-rec_label.place(x=mleft, y=start_at, width=totalwith / 2 - 2 * mleft, height=35)
-google_label.place(x=mleft + totalwith / 2, y=start_at, width=totalwith / 2 - 2 * mleft, height=35)
+info_label.grid(column=0, row=1, columnspan=2, pady=5)
+points_label.grid(column=0, row=2, columnspan=2, )
 
-start_at = start_at + 40
-width_scrollbar = 30
-history_scrollbar.place(x=totalwith - mleft - width_scrollbar, y=start_at, width=width_scrollbar, height=300)
-history_text.place(x=mleft, y=start_at, width=totalwith - 2 * mleft - width_scrollbar, height=385)
+language_label.grid(column=0, row=3, columnspan=1, sticky="E", padx=10)
+language_om.grid(column=1, row=3, columnspan=1, sticky="W")
+spinbox_label.grid(column=0, row=4, columnspan=1, sticky="E", padx=10)
+enter_spinbox.grid(column=1, row=4, columnspan=1, sticky="W")
+sensitivity_label.grid(column=0, row=5, columnspan=1, sticky="E", padx=10)
+sensitivity_scale.grid(column=1, row=5, columnspan=1, sticky="W")
+topmost_checkbutton.grid(column=0, row=6, columnspan=2)
 
-mail_label.place(x=mleft, y=totalheight - 40, width=totalwith - 2 * mleft, height=35)
+google_label.grid(column=0, row=7, columnspan=1)
+rec_label.grid(column=1, row=7, columnspan=1)
+
+frame_history.grid(column=0, row=8, columnspan=2, padx=10, )
+
+mail_label.grid(column=0, row=9, columnspan=2, padx=5, pady=5)
 
 r = sr.Recognizer()
 r.energy_threshold = 2000  # minimum audio energy to consider for recording
