@@ -1,5 +1,6 @@
 import json
 import os.path
+from tkinter import messagebox as mbox
 
 
 class TextProcessor():
@@ -7,18 +8,21 @@ class TextProcessor():
         self.language = "not set"
         self.logging = logging
 
-        if os.path.isfile(file):
-            self.logging.info("loading and re-formatting config: " + file)
-            with open(file, 'r', encoding='UTF-8') as f:
-                self.config = json.load(f, encoding='UTF-8')
-            # write it again, to maintain nice formatting
-            with open(file, 'w', encoding='UTF-8') as f:
-                json.dump(self.config, indent=2, fp=f, ensure_ascii=False)
-        else:
-            self.logging.info("file '%s' not found. Create it." % file)
-            self.config = self.setConfig()
-            with open(file, 'w', encoding='UTF-8') as f:
-                json.dump(self.config, indent=2, fp=f, ensure_ascii=False)
+        try:
+            if os.path.isfile(file):
+                self.logging.info("loading and re-formatting config: " + file)
+                with open(file, 'r', encoding='UTF-8') as f:
+                    self.config = json.load(f, encoding='UTF-8')
+                # write it again, to maintain nice formatting
+                with open(file, 'w', encoding='UTF-8') as f:
+                    json.dump(self.config, indent=2, fp=f, ensure_ascii=False)
+            else:
+                self.logging.info("file '%s' not found. Create it." % file)
+                self.config = self.setConfig()
+                with open(file, 'w', encoding='UTF-8') as f:
+                    json.dump(self.config, indent=2, fp=f, ensure_ascii=False)
+        except:
+            mbox.showerror("Error", "Could not read 'languages.json' properly. Delete this file and start again!")
 
     def setConfig(self):
         config = dict()
