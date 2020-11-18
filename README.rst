@@ -2,6 +2,8 @@
 Speech2DartCounter
 ==================
 
+.. image:: Screenshot.png
+
 This project is a speech recognizer for the dart web application DartCounter (https://dartcounter.net/, x01 and single training is supported).
 
 The program runs in parallel to the web application on the desktop PC.
